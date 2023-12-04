@@ -1,4 +1,5 @@
-import java.util.Scanner;
+
+ import java.util.Scanner;
 
 class Admin {
     String key;
@@ -10,7 +11,78 @@ class Admin {
     }
 }
 
+class Room {
+    int roomNumber;
+    String roomType;
+    boolean isOccupied;
+    String[] facilities;
+    double roomPrice; // Harga kamar
+    double fine; // Denda
+
+    public Room(int roomNumber, String roomType) {
+        this.roomNumber = roomNumber;
+        this.roomType = roomType;
+        this.isOccupied = false;
+        this.facilities = getFacilitiesByType(roomType);
+        setRoomAttributes(roomType);
+    }
+
+    private void setRoomAttributes(String roomType) {
+        switch (roomType.toLowerCase()) {
+            case "presiden":
+                roomPrice = 9000000;
+                fine = roomPrice*0.1;
+                break;
+            case "vip":
+                roomPrice = 5000000;
+                fine = roomPrice*0.1;
+                break;
+            case "reguler":
+                roomPrice = 1000000;
+                fine = roomPrice*0.1;
+                break;
+            default:
+                roomPrice = 0;
+                fine = 0;
+        }
+    }
+
+    public void displayRoomInfo() {
+        System.out.println("Nomor Kamar: " + roomNumber);
+        System.out.println("Tipe Kamar: " + roomType);
+        System.out.println("Status: " + (isOccupied ? "Terisi" : "Tersedia"));
+        System.out.println("Harga: " + formatCurrency(roomPrice));
+        System.out.println("Denda: " + formatCurrency(fine));
+        System.out.println("Fasilitas Kamar:");
+        for (String facility : facilities) {
+            System.out.println("- " + facility);
+        }
+    }
+
+     private String formatCurrency(double amount) {
+        
+        String currencySymbol = "Rp"; 
+        return currencySymbol + amount;
+    }
+
+    private String[] getFacilitiesByType(String roomType) {
+        if ("presiden".equalsIgnoreCase(roomType)) {
+            return new String[]{"Private Jacuzzi", "Luxury Furniture", "Personal Butler"};
+        } else if ("vip".equalsIgnoreCase(roomType)) {
+            return new String[]{"Balcony", "Mini Bar", "King Size Bed"};
+        } else if ("reguler".equalsIgnoreCase(roomType)) {
+            return new String[]{"TV", "Bathroom", "Standard Furniture"};
+        } else {
+            return new String[0];
+        }
+    }
+}
+
+
 class MenuHotel {
+    
+    Room[] daftarKamar = new Room[1000];
+    
     public void menuHotel() {
         Scanner scanner = new Scanner(System.in);
         int choice;
@@ -61,7 +133,88 @@ class MenuHotel {
     public void kelolakamar() {
         // Implementasi tambah kamar dan tampilkan kamar
         // Implementasi logika untuk menambah kamar dan tampilkan kamar
+
+	Scanner scanner = new Scanner(System.in);
+        int pilih;
+        do {
+			System.out.println("=== HALAMAN MENU KELOLA KAMAR ===");
+            System.out.println("1. Tambah Kamar Baru");
+            System.out.println("2. Lihat Data Kamar");
+            System.out.println("0. Keluar");
+			System.out.println("==========================");
+            System.out.print("Pilih menu (0-2): ");
+            pilih = scanner.nextInt();
+            scanner.nextLine();
+            switch (pilih) {
+                case 1:
+                    tambahKamarBaru();
+                    break;
+                case 2:
+                    //LihatDataKamar();
+                    //LihatDataKamar();
+                    /*System.out.println("Data kamar tersedia: ");
+                    for (Room room : daftarKamar) {
+                        room.displayRoomInfo();
+                        System.out.println("==========================");
+                    }*/
+		        case 0:
+                    System.out.println("Keluar dari program.");
+                    break;
+                default:
+                    System.out.println("Pilihan tidak valid. Silakan pilih lagi.");
+            }
+            
+        } while (pilih != 0);
+      
     }
+    
+   public void tambahKamarBaru() {
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.print("Masukkan Nomor Kamar: ");
+    int roomNumber = scanner.nextInt();
+    
+    if (daftarKamar[roomNumber] != null) {
+        System.out.println("Nomor Kamar sudah terpakai. Pilih nomor kamar lain.");
+        return;
+    }
+    
+    scanner.nextLine(); 
+
+    System.out.println("Pilih Tipe Kamar:");
+    System.out.println("1. Presiden");
+    System.out.println("2. VIP");
+    System.out.println("3. Reguler");
+    System.out.print("Masukkan pilihan (1-3): ");
+    int roomTypeChoice = scanner.nextInt();
+    scanner.nextLine(); 
+    
+    String roomType;
+    switch (roomTypeChoice) {
+        case 1:
+            roomType = "Presiden";
+            break;
+        case 2:
+            roomType = "VIP";
+            break;
+        case 3:
+            roomType = "Reguler";
+            break;
+        default:
+            System.out.println("Pilihan tidak valid. Menggunakan tipe kamar default.");
+            roomType = "Reguler";
+    }
+
+    Room newRoom = new Room(roomNumber, roomType);
+    newRoom.isOccupied = true; 
+    daftarKamar[roomNumber] = newRoom;
+    
+    
+    System.out.println("Kamar berhasil ditambahkan. Berikut informasinya:");
+    newRoom.displayRoomInfo();
+    System.out.println("==========================");
+}
+
 
     public void tambahInfoPenyewa() {
         // Implementasi tambah informasi penyewa
@@ -93,6 +246,7 @@ public class HotelManagement {
     private static final int TABLE_SIZE = 100;
     private static Admin[] hashTable = new Admin[TABLE_SIZE];
     private static int userCount = 0;
+    private static MenuHotel menuHotel = new MenuHotel();
 
     public static void main(String[] args) {
         HotelManagement hotel = new HotelManagement();
@@ -128,6 +282,8 @@ public class HotelManagement {
                     System.out.println("Invalid option. Please try again.");
             }
         } while (choice != 3);
+        
+        
     }
 
     public static void setUserCount(int count) {
@@ -137,6 +293,7 @@ public class HotelManagement {
     public static int getUserCount() {
         return userCount;
     }
+    
 }
 
 class SistemLogin {
