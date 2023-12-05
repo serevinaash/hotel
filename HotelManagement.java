@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.Scanner;
 
 class Admin {
@@ -11,6 +13,7 @@ class Admin {
 }
 
 class Room {
+     ArrayList<CheckInInfo> checkIns = new ArrayList<>();
     int roomNumber;
     String roomType;
     boolean isOccupied;
@@ -26,6 +29,19 @@ class Room {
     String homeAddress;
     String emailAddress;
 
+    // Atribut untuk informasi check-in
+    String transactionNumber;
+    int durationInDays;
+    java.util.Date checkInDateTime; // Menggunakan java.util.Date
+    java.util.Date checkOutDateTime; // Menggunakan java.util.Date
+
+    public boolean isOccupied() {
+        return isOccupied;
+    }
+
+    public void setOccupied(boolean occupied) {
+        isOccupied = occupied;
+    }
     public Room(int roomNumber, String roomType) {
         this.roomNumber = roomNumber;
         this.roomType = roomType;
@@ -38,15 +54,15 @@ class Room {
         switch (roomType.toLowerCase()) {
             case "presiden":
                 roomPrice = 9000000;
-                fine = roomPrice*0.1;
+                fine = roomPrice * 0.1;
                 break;
             case "vip":
                 roomPrice = 5000000;
-                fine = roomPrice*0.1;
+                fine = roomPrice * 0.1;
                 break;
             case "reguler":
                 roomPrice = 1000000;
-                fine = roomPrice*0.1;
+                fine = roomPrice * 0.1;
                 break;
             default:
                 roomPrice = 0;
@@ -74,6 +90,36 @@ class Room {
         System.out.println("NIK: " + nationalId);
         System.out.println("Alamat Asal: " + homeAddress);
         System.out.println("Alamat Email: " + emailAddress);
+    }
+
+        public void displayCheckinInfo() {
+        java.text.SimpleDateFormat dateFormat = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+        System.out.println("Informasi Check-in:");
+        for (CheckInInfo checkInInfo : checkIns) {
+            System.out.println("Nomor Transaksi: " + checkInInfo.transactionNumber);
+            System.out.println("Durasi Menginap (dalam sehari): " + checkInInfo.durationInDays);
+            System.out.println("Tanggal dan Waktu Check-in: " + dateFormat.format(checkInInfo.checkInDateTime));
+            System.out.println("Tanggal Checkout: " + dateFormat.format(checkInInfo.checkOutDateTime));
+        }
+    }
+
+    public void addCheckInInfo(CheckInInfo checkInInfo) {
+        checkIns.add(checkInInfo);
+    }
+
+    private class CheckInInfo {
+        String transactionNumber;
+        int durationInDays;
+        java.util.Date checkInDateTime; // Menggunakan java.util.Date
+        java.util.Date checkOutDateTime; // Menggunakan java.util.Date
+
+        public CheckInInfo(String transactionNumber, int durationInDays, java.util.Date checkInDateTime,
+                           String guestName, String occupation, String phoneNumber,
+                           String nationalId, String homeAddress, String emailAddress,
+                           java.util.Date checkOutDateTime) {
+
+            this.checkOutDateTime = checkOutDateTime;
+        }
     }
 
     private String formatCurrency(double amount) {
@@ -261,9 +307,46 @@ class MenuHotel {
     }
 
     public void checkin() {
-        // Implementasi check in
-        // TODO: Implementasi logika untuk checkin
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.print("Masukkan Nomor Transaksi: ");
+    int transactionNumber = 0;
+    while (!scanner.hasNextInt()) {
+        System.out.println("Masukkan nomor transaksi yang valid: ");
+        scanner.next(); // Membersihkan buffer
     }
+    transactionNumber = scanner.nextInt();
+
+    System.out.print("Masukkan Nomor Kamar: ");
+    int roomNumber = 0;
+    while (!scanner.hasNextInt()) {
+        System.out.println("Masukkan nomor kamar yang valid: ");
+        scanner.next(); // Membersihkan buffer
+    }
+    roomNumber = scanner.nextInt();
+
+    if (roomNumber >= 0 && roomNumber < daftarKamar.length) {
+        Room room = daftarKamar[roomNumber];
+
+        if (room != null && !room.isOccupied()) {
+            room.setOccupied(true);
+            // Memperoleh informasi pengguna lainnya di sini
+
+            System.out.print("Metode Pembayaran: ");
+            String paymentMethod = scanner.next();
+            
+            System.out.print("Masukkan Tanggal Check-in (dd/mm/yyyy): ");
+            String checkInDateStr = scanner.next();
+            // Validasi format tanggal di sini menggunakan SimpleDateFormat
+            
+            System.out.println("Check-in berhasil.");
+        } else {
+            System.out.println("Nomor Kamar tidak ditemukan atau sudah ditempati.");
+        }
+    } else {
+        System.out.println("Nomor Kamar tidak valid.");
+    }
+}
 
     public void checkout() {
         // Implementasi check out
