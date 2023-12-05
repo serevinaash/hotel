@@ -1,5 +1,4 @@
-
- import java.util.Scanner;
+import java.util.Scanner;
 
 class Admin {
     String key;
@@ -18,6 +17,14 @@ class Room {
     String[] facilities;
     double roomPrice; // Harga kamar
     double fine; // Denda
+
+    // Atribut tambahan untuk informasi penyewa
+    String guestName;
+    String occupation;
+    String phoneNumber;
+    String nationalId;
+    String homeAddress;
+    String emailAddress;
 
     public Room(int roomNumber, String roomType) {
         this.roomNumber = roomNumber;
@@ -59,9 +66,18 @@ class Room {
         }
     }
 
-     private String formatCurrency(double amount) {
-        
-        String currencySymbol = "Rp"; 
+    public void displayGuestInfo() {
+        System.out.println("Informasi Penyewa:");
+        System.out.println("Nama Tamu: " + guestName);
+        System.out.println("Pekerjaan: " + occupation);
+        System.out.println("Nomor Telepon: " + phoneNumber);
+        System.out.println("NIK: " + nationalId);
+        System.out.println("Alamat Asal: " + homeAddress);
+        System.out.println("Alamat Email: " + emailAddress);
+    }
+
+    private String formatCurrency(double amount) {
+        String currencySymbol = "Rp";
         return currencySymbol + amount;
     }
 
@@ -78,19 +94,17 @@ class Room {
     }
 }
 
-
 class MenuHotel {
-    
     Room[] daftarKamar = new Room[1000];
-    
+
     public void menuHotel() {
         Scanner scanner = new Scanner(System.in);
         int choice;
         do {
-			System.out.println("==========================");
-			System.out.println("== WELCOME TO OUR HOTEL ==");
-			System.out.println("==========================");
-			System.out.println("=== HALAMAN MENU HOTEL ===");
+            System.out.println("==========================");
+            System.out.println("== WELCOME TO OUR HOTEL ==");
+            System.out.println("==========================");
+            System.out.println("=== HALAMAN MENU HOTEL ===");
             System.out.println("1. Kelola Kamar Hotel");
             System.out.println("2. Tambah Informasi Penyewa");
             System.out.println("3. Check In");
@@ -98,7 +112,7 @@ class MenuHotel {
             System.out.println("5. Cari Transaksi");
             System.out.println("6. Statistik Hotel");
             System.out.println("0. Keluar");
-			System.out.println("==========================");
+            System.out.println("==========================");
             System.out.print("Pilih menu (0-6): ");
             choice = scanner.nextInt();
             scanner.nextLine();
@@ -131,17 +145,14 @@ class MenuHotel {
     }
 
     public void kelolakamar() {
-        // Implementasi tambah kamar dan tampilkan kamar
-        // Implementasi logika untuk menambah kamar dan tampilkan kamar
-
-	Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
         int pilih;
         do {
-			System.out.println("=== HALAMAN MENU KELOLA KAMAR ===");
+            System.out.println("=== HALAMAN MENU KELOLA KAMAR ===");
             System.out.println("1. Tambah Kamar Baru");
             System.out.println("2. Lihat Data Kamar");
             System.out.println("0. Keluar");
-			System.out.println("==========================");
+            System.out.println("==========================");
             System.out.print("Pilih menu (0-2): ");
             pilih = scanner.nextInt();
             scanner.nextLine();
@@ -150,75 +161,103 @@ class MenuHotel {
                     tambahKamarBaru();
                     break;
                 case 2:
-                    //LihatDataKamar();
-                    //LihatDataKamar();
-                    /*System.out.println("Data kamar tersedia: ");
-                    for (Room room : daftarKamar) {
-                        room.displayRoomInfo();
-                        System.out.println("==========================");
-                    }*/
-		        case 0:
+                    lihatDataKamar();
+                    break;
+                case 0:
                     System.out.println("Keluar dari program.");
                     break;
                 default:
                     System.out.println("Pilihan tidak valid. Silakan pilih lagi.");
             }
-            
         } while (pilih != 0);
-      
-    }
-    
-   public void tambahKamarBaru() {
-    Scanner scanner = new Scanner(System.in);
-
-    System.out.print("Masukkan Nomor Kamar: ");
-    int roomNumber = scanner.nextInt();
-    
-    if (daftarKamar[roomNumber] != null) {
-        System.out.println("Nomor Kamar sudah terpakai. Pilih nomor kamar lain.");
-        return;
-    }
-    
-    scanner.nextLine(); 
-
-    System.out.println("Pilih Tipe Kamar:");
-    System.out.println("1. Presiden");
-    System.out.println("2. VIP");
-    System.out.println("3. Reguler");
-    System.out.print("Masukkan pilihan (1-3): ");
-    int roomTypeChoice = scanner.nextInt();
-    scanner.nextLine(); 
-    
-    String roomType;
-    switch (roomTypeChoice) {
-        case 1:
-            roomType = "Presiden";
-            break;
-        case 2:
-            roomType = "VIP";
-            break;
-        case 3:
-            roomType = "Reguler";
-            break;
-        default:
-            System.out.println("Pilihan tidak valid. Menggunakan tipe kamar default.");
-            roomType = "Reguler";
     }
 
-    Room newRoom = new Room(roomNumber, roomType);
-    newRoom.isOccupied = true; 
-    daftarKamar[roomNumber] = newRoom;
-    
-    
-    System.out.println("Kamar berhasil ditambahkan. Berikut informasinya:");
-    newRoom.displayRoomInfo();
-    System.out.println("==========================");
-}
+    public void tambahKamarBaru() {
+        Scanner scanner = new Scanner(System.in);
 
+        System.out.print("Masukkan Nomor Kamar: ");
+        int roomNumber = scanner.nextInt();
+
+        if (daftarKamar[roomNumber] != null) {
+            System.out.println("Nomor Kamar sudah terpakai. Pilih nomor kamar lain.");
+            return;
+        }
+
+        scanner.nextLine();
+
+        System.out.println("Pilih Tipe Kamar:");
+        System.out.println("1. Presiden");
+        System.out.println("2. VIP");
+        System.out.println("3. Reguler");
+        System.out.print("Masukkan pilihan (1-3): ");
+        int roomTypeChoice = scanner.nextInt();
+        scanner.nextLine();
+
+        String roomType;
+        switch (roomTypeChoice) {
+            case 1:
+                roomType = "Presiden";
+                break;
+            case 2:
+                roomType = "VIP";
+                break;
+            case 3:
+                roomType = "Reguler";
+                break;
+            default:
+                System.out.println("Pilihan tidak valid. Menggunakan tipe kamar default.");
+                roomType = "Reguler";
+        }
+
+        Room newRoom = new Room(roomNumber, roomType);
+        newRoom.isOccupied = true;
+        daftarKamar[roomNumber] = newRoom;
+
+        System.out.println("Kamar berhasil ditambahkan. Berikut informasinya:");
+        newRoom.displayRoomInfo();
+        System.out.println("==========================");
+    }
+
+    public void lihatDataKamar() {
+        System.out.println("Data kamar tersedia: ");
+        for (Room room : daftarKamar) {
+            if (room != null) {
+                room.displayRoomInfo();
+                System.out.println("==========================");
+            }
+        }
+    }
 
     public void tambahInfoPenyewa() {
-        // Implementasi tambah informasi penyewa
-        // Implementasi logika untuk menambah informasi penyewa
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.print("Masukkan Nomor Kamar yang Ingin Ditambahkan Informasi Penyewa: ");
+        int roomNumber = scanner.nextInt();
+        scanner.nextLine();
+
+        if (daftarKamar[roomNumber] == null || !daftarKamar[roomNumber].isOccupied) {
+            System.out.println("Kamar tidak terisi atau tidak tersedia.");
+            return;
+        }
+
+        System.out.print("Nama Tamu: ");
+        daftarKamar[roomNumber].guestName = scanner.nextLine();
+        System.out.print("Pekerjaan: ");
+        daftarKamar[roomNumber].occupation = scanner.nextLine();
+        System.out.print("Nomor Telepon: ");
+        daftarKamar[roomNumber].phoneNumber = scanner.nextLine();
+        System.out.print("NIK: ");
+        daftarKamar[roomNumber].nationalId = scanner.nextLine();
+        System.out.print("Alamat Asal: ");
+        daftarKamar[roomNumber].homeAddress = scanner.nextLine();
+        System.out.print("Alamat Email: ");
+        daftarKamar[roomNumber].emailAddress = scanner.nextLine();
+
+        System.out.println("Informasi penyewa berhasil ditambahkan.");
+        System.out.println("Berikut informasinya:");
+        daftarKamar[roomNumber].displayRoomInfo();
+        daftarKamar[roomNumber].displayGuestInfo();
+        System.out.println("==========================");
     }
 
     public void checkin() {
@@ -252,6 +291,7 @@ public class HotelManagement {
         HotelManagement hotel = new HotelManagement();
         Scanner scanner = new Scanner(System.in);
         int choice;
+
         System.out.println("==========================");
         System.out.println("== WELCOME TO OUR HOTEL ==");
         System.out.println("==========================");
@@ -266,24 +306,25 @@ public class HotelManagement {
             choice = scanner.nextInt();
             scanner.nextLine();
 
-            switch (choice) {
-                case 1:
-                    SistemLogin.signUp(scanner, hashTable);
-                    break;
-                case 2:
-                    SistemLogin.logIn(scanner, hashTable);
-                    MenuHotel menuHotel = new MenuHotel();
-                    menuHotel.menuHotel();
-                    break;
-                case 0:
-                    System.out.println("TERIMAKASIH TELAH MENGGUNAKAN PROGRAM INI.");
-                    System.exit(0);
-                default:
-                    System.out.println("Invalid option. Please try again.");
+            try {
+                switch (choice) {
+                    case 1:
+                        SistemLogin.signUp(scanner, hashTable);
+                        break;
+                    case 2:
+                        SistemLogin.logIn(scanner, hashTable);
+                        menuHotel.menuHotel();
+                        break;
+                    case 0:
+                        System.out.println("TERIMAKASIH TELAH MENGGUNAKAN PROGRAM INI.");
+                        System.exit(0);
+                    default:
+                        System.out.println("Pilihan tidak valid. Silakan coba lagi.");
+                }
+            } catch (Exception e) {
+                System.out.println("Terjadi kesalahan: " + e.getMessage());
             }
         } while (choice != 3);
-        
-        
     }
 
     public static void setUserCount(int count) {
@@ -293,14 +334,13 @@ public class HotelManagement {
     public static int getUserCount() {
         return userCount;
     }
-    
 }
 
 class SistemLogin {
     private static final int TABLE_SIZE = 100;
 
     public static void signUp(Scanner scanner, Admin[] hashTable) {
-        System.out.print("Enter Nama Lengkap: ");
+         System.out.print("Enter Nama Lengkap: ");
         String username = scanner.nextLine();
         System.out.print("Enter password: ");
         String password = scanner.nextLine();
@@ -310,6 +350,7 @@ class SistemLogin {
         while (hashTable[hash] != null) {
             hash = (hash + 1) % TABLE_SIZE;
         }
+
         hashTable[hash] = new Admin(username, password);
         HotelManagement.setUserCount(HotelManagement.getUserCount() + 1);
         System.out.println("Registration successful!");
@@ -318,26 +359,40 @@ class SistemLogin {
     }
 
     public static void logIn(Scanner scanner, Admin[] hashTable) {
-        System.out.print("Enter Admin ID: ");
-        String adminIdInput = scanner.nextLine();
-        int adminId = Integer.parseInt(adminIdInput);
+        int maxAttempts = 3;  // Define the maximum number of login attempts
+        int attempts = 0;
 
-        System.out.print("Enter password: ");
-        String password = scanner.nextLine();
-        // Linear probing to find the user in the hash table
-        while (hashTable[adminId] != null) {
-            if (hashTable[adminId].value.equals(password)) {
-                System.out.println("Login successful!");
-                System.out.println("==========================");
-                return;
+        do {
+            System.out.print("Enter Admin ID: ");
+            String adminIdInput = scanner.nextLine();
+
+            // Mengubah input Admin ID menjadi integer
+            int adminId = Integer.parseInt(adminIdInput);
+
+            System.out.print("Enter password: ");
+            String password = scanner.nextLine();
+
+            // Linear probing untuk menemukan admin di hashTable
+            while (hashTable[adminId] != null) {
+                if (hashTable[adminId].value.equals(password)) {
+                    System.out.println("Login successful!");
+                    System.out.println("==========================");
+                    return;  // Exit the method and proceed to the menu
+                }
+                adminId = (adminId + 1) % TABLE_SIZE;
             }
-            adminId = (adminId + 1) % TABLE_SIZE;
-        }
 
-        System.out.println("Incorrect Admin ID or password. Login failed.");
+            attempts++;
+            System.out.println("Incorrect Admin ID or password. Login attempt " + attempts + " of " + maxAttempts);
+            System.out.println("==========================");
+
+        } while (attempts < maxAttempts);
+
+        System.out.println("Exceeded maximum login attempts. Exiting program.");
+        System.exit(0);  // Terminate the program after exceeding maximum login attempts
     }
 
     private static int hashFunction(String key) {
         return key.length() % TABLE_SIZE;
-    }
+}
 }
