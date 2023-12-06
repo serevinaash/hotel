@@ -43,7 +43,7 @@ class Penyewa {
 
 
 class Room {
-	 Penyewa penyewa;
+	Penyewa penyewa;
     int roomNumber;
     String roomType;
     boolean isOccupied;
@@ -131,6 +131,7 @@ class Room {
     }
 }
 
+
 class CheckIn {
     public int transactionNumber;
     public int roomNumber;
@@ -139,13 +140,22 @@ class CheckIn {
     public long checkInTimeMillis;
     public long checkOutTimeMillis;
 
-    public CheckIn(int transactionNumber, int roomNumber, String paymentMethod, int durationInDays) {
+    public CheckIn(int transactionNumber, int roomNumber, String paymentMethod, int durationInDays, int yearIn, int monthIn, int dayIn) {
         this.transactionNumber = transactionNumber;
         this.roomNumber = roomNumber;
         this.paymentMethod = paymentMethod;
         this.durationInDays = durationInDays;
-        this.checkInTimeMillis = System.currentTimeMillis();
-        this.checkOutTimeMillis = checkInTimeMillis + (durationInDays * 24L * 60 * 60 * 1000); // Convert days to milliseconds
+
+        // Hitung waktu millis secara manual berdasarkan tanggal yang dimasukkan
+        this.checkInTimeMillis = calculateMillis(yearIn, monthIn, dayIn, 12, 0, 0); // Jam 12:00:00 PM
+        this.checkOutTimeMillis = calculateMillis(yearIn, monthIn, dayIn + durationInDays, 12, 0, 0); // Jam 12:00:00 PM
+    }
+
+    // Fungsi bantuan untuk menghitung waktu millis dari tanggal, bulan, tahun, jam, menit, detik
+    private long calculateMillis(int year, int month, int day, int hour, int minute, int second) {
+        java.util.Calendar calendar = java.util.Calendar.getInstance();
+        calendar.set(year, month - 1, day, hour, minute, second); // Perhatikan bahwa bulan dimulai dari 0
+        return calendar.getTimeInMillis();
     }
 
     public int getTransactionNumber() {
@@ -341,12 +351,13 @@ class MenuHotel {
         daftarPenyewa[roomNumber] = penyewa;
 
         System.out.println("Informasi penyewa berhasil ditambahkan.");
-        System.out.println("Berikut informasinya:");
+        System.out.println("Berikut informasinya: ");
+        penyewa.displayPenyewaInfo();
         System.out.println("==========================");
     }
 
 
-public void checkin() {
+ public void checkin() {
         Scanner scanner = new Scanner(System.in);
 
         System.out.println("=== HALAMAN CHECK-IN ===");
@@ -365,8 +376,16 @@ public void checkin() {
         int durationInDays = scanner.nextInt();
         scanner.nextLine();
 
-        // Create CheckIn object
-        CheckIn checkIn = new CheckIn(transactionNumber, roomNumber, paymentMethod, durationInDays);
+        System.out.println("Masukkan Tanggal Check-In (format: YYYY-MM-DD): ");
+        System.out.print("Tahun: ");
+        int yearIn = scanner.nextInt();
+        System.out.print("Bulan: ");
+        int monthIn = scanner.nextInt();
+        System.out.print("Hari: ");
+        int dayIn = scanner.nextInt();
+
+        // Create CheckIn object with manual input for date and time
+        CheckIn checkIn = new CheckIn(transactionNumber, roomNumber, paymentMethod, durationInDays, yearIn, monthIn, dayIn);
 
         // Update room status or perform other necessary actions
         // ...
