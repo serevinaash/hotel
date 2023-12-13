@@ -1,4 +1,11 @@
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Scanner;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 
 class Admin {
     String key;
@@ -43,15 +50,15 @@ class Penyewa {
 
 
 class Room {
-	Penyewa penyewa;
+    Penyewa penyewa;
     int roomNumber;
     String roomType;
     boolean isOccupied;
     String[] facilities;
     double roomPrice; // Harga kamar
     double fine; // Denda
+    CheckIn checkIn;
 
-    // Atribut tambahan untuk informasi penyewa
     String guestName;
     String occupation;
     String phoneNumber;
@@ -70,20 +77,16 @@ class Room {
     private void setRoomAttributes(String roomType) {
         switch (roomType.toLowerCase()) {
             case "presiden":
-                roomPrice = 9000000;
-                fine = roomPrice*0.1;
+                roomPrice = 3000000;
                 break;
             case "vip":
-                roomPrice = 5000000;
-                fine = roomPrice*0.1;
+                roomPrice = 2000000;
                 break;
             case "reguler":
                 roomPrice = 1000000;
-                fine = roomPrice*0.1;
                 break;
             default:
                 roomPrice = 0;
-                fine = 0;
         }
     }
 
@@ -91,8 +94,12 @@ class Room {
         System.out.println("Nomor Kamar: " + roomNumber);
         System.out.println("Tipe Kamar: " + roomType);
         System.out.println("Status: " + (isOccupied ? "Terisi" : "Tersedia"));
-        System.out.println("Harga: " + formatCurrency(roomPrice));
-        System.out.println("Denda: " + formatCurrency(fine));
+
+        DecimalFormat currencyFormatter = new DecimalFormat("Rp#,##0.00");
+        String formattedPrice = currencyFormatter.format(roomPrice);
+
+        System.out.println("Harga: " + formattedPrice);
+
         System.out.println("Fasilitas Kamar:");
         for (String facility : facilities) {
             System.out.println("- " + facility);
@@ -109,9 +116,13 @@ class Room {
         System.out.println("Alamat Email: " + emailAddress);
     }
 
-    private String formatCurrency(double amount) {
-        String currencySymbol = "Rp";
-        return currencySymbol + amount;
+    public void assignCheckIn(CheckIn checkIn) {
+        this.checkIn = checkIn;
+    }
+
+    public void assignPenyewa(Penyewa newPenyewa) {
+        this.penyewa = newPenyewa;
+        isOccupied = true;
     }
 
     private String[] getFacilitiesByType(String roomType) {
@@ -125,37 +136,32 @@ class Room {
             return new String[0];
         }
     }
-	public void assignPenyewa(Penyewa newPenyewa) {
-        this.penyewa = newPenyewa;
-        isOccupied = true;
-    }
 }
 
-
 class CheckIn {
-    public int transactionNumber;
-    public int roomNumber;
-    public String paymentMethod;
-    public int durationInDays;
-    public long checkInTimeMillis;
-    public long checkOutTimeMillis;
+    private static int nextTransactionNumber = 1;
+    private int transactionNumber;
+    private int roomNumber;
+    private String paymentMethod;
+    private int durationInDays;
+    private LocalDateTime checkInDateTime;
+    private LocalDateTime checkOutDateTime;
 
-    public CheckIn(int transactionNumber, int roomNumber, String paymentMethod, int durationInDays, int yearIn, int monthIn, int dayIn) {
-        this.transactionNumber = transactionNumber;
+    public CheckIn(int roomNumber, String paymentMethod, int durationInDays) {
+        this.transactionNumber = nextTransactionNumber++;
         this.roomNumber = roomNumber;
         this.paymentMethod = paymentMethod;
         this.durationInDays = durationInDays;
-
-        // Hitung waktu millis secara manual berdasarkan tanggal yang dimasukkan
-        this.checkInTimeMillis = calculateMillis(yearIn, monthIn, dayIn, 12, 0, 0); // Jam 12:00:00 PM
-        this.checkOutTimeMillis = calculateMillis(yearIn, monthIn, dayIn + durationInDays, 12, 0, 0); // Jam 12:00:00 PM
+        this.checkInDateTime = LocalDateTime.now();
+        this.checkOutDateTime = this.checkInDateTime.plusDays(durationInDays);
     }
 
-    // Fungsi bantuan untuk menghitung waktu millis dari tanggal, bulan, tahun, jam, menit, detik
-    private long calculateMillis(int year, int month, int day, int hour, int minute, int second) {
-        java.util.Calendar calendar = java.util.Calendar.getInstance();
-        calendar.set(year, month - 1, day, hour, minute, second); // Perhatikan bahwa bulan dimulai dari 0
-        return calendar.getTimeInMillis();
+    public LocalDateTime getCheckInDateTime() {
+        return checkInDateTime;
+    }
+
+    public LocalDateTime getCheckOutDateTime() {
+        return checkOutDateTime;
     }
 
     public int getTransactionNumber() {
@@ -173,22 +179,20 @@ class CheckIn {
     public int getDurationInDays() {
         return durationInDays;
     }
-
-    public long getCheckInTimeMillis() {
-        return checkInTimeMillis;
-    }
-
-    public long getCheckOutTimeMillis() {
-        return checkOutTimeMillis;
-    }
-
-    // Other methods as needed
 }
 
 
 class MenuHotel {
     Room[] daftarKamar = new Room[1000];
-	Penyewa[] daftarPenyewa = new Penyewa[1000];
+    Penyewa[] daftarPenyewa = new Penyewa[1000];
+
+    private static final NumberFormat currencyFormatter = new DecimalFormat("#,##0.00");
+
+    public static String formatCurrency(double amount) {
+        String currencySymbol = "Rp";
+        return currencySymbol + amount;
+    }
+
     public void menuHotel() {
         Scanner scanner = new Scanner(System.in);
         int choice;
@@ -235,7 +239,6 @@ class MenuHotel {
             }
         } while (choice != 0);
     }
-
     public void kelolakamar() {
         Scanner scanner = new Scanner(System.in);
         int pilih;
@@ -357,66 +360,221 @@ class MenuHotel {
     }
 
 
- public void checkin() {
-        Scanner scanner = new Scanner(System.in);
+public void checkin() {
+    Scanner scanner = new Scanner(System.in);
 
-        System.out.println("=== HALAMAN CHECK-IN ===");
-        System.out.print("Masukkan Nomor Transaksi: ");
-        int transactionNumber = scanner.nextInt();
-        scanner.nextLine(); // Consume the newline character
+    System.out.println("=== HALAMAN CHECK-IN ===");
+    System.out.print("Masukkan Nomor Kamar: ");
+    int roomNumber = scanner.nextInt();
+    scanner.nextLine();
 
-        System.out.print("Masukkan Nomor Kamar: ");
-        int roomNumber = scanner.nextInt();
-        scanner.nextLine();
-
-        System.out.print("Metode Pembayaran: ");
-        String paymentMethod = scanner.nextLine();
-
-        System.out.print("Durasi Menginap (dalam hari): ");
-        int durationInDays = scanner.nextInt();
-        scanner.nextLine();
-
-        System.out.println("Masukkan Tanggal Check-In (format: YYYY-MM-DD): ");
-        System.out.print("Tahun: ");
-        int yearIn = scanner.nextInt();
-        System.out.print("Bulan: ");
-        int monthIn = scanner.nextInt();
-        System.out.print("Hari: ");
-        int dayIn = scanner.nextInt();
-
-        // Create CheckIn object with manual input for date and time
-        CheckIn checkIn = new CheckIn(transactionNumber, roomNumber, paymentMethod, durationInDays, yearIn, monthIn, dayIn);
-
-        // Update room status or perform other necessary actions
-        // ...
-
-        // Display check-in details
-        System.out.println("Check-In Berhasil!");
-        System.out.println("Nomor Transaksi: " + checkIn.getTransactionNumber());
-        System.out.println("Nomor Kamar: " + checkIn.getRoomNumber());
-        System.out.println("Metode Pembayaran: " + checkIn.getPaymentMethod());
-        System.out.println("Durasi Menginap: " + checkIn.getDurationInDays() + " hari");
-        System.out.println("Tanggal dan Waktu Check-In: " + checkIn.getCheckInTimeMillis());
-        System.out.println("Tanggal Check-Out: " + checkIn.getCheckOutTimeMillis());
-        System.out.println("==========================");
+    if (daftarKamar[roomNumber] == null) {
+        System.out.println("Kamar tidak tersedia. Silakan tambahkan kamar terlebih dahulu.");
+        return;
     }
 
-    public void checkout() {
-        // Implementasi check out
-        // TODO: Implementasi logika untuk checkout
+    System.out.print("Metode Pembayaran: ");
+    String paymentMethod = scanner.nextLine();
+
+    System.out.print("Durasi Menginap (dalam hari): ");
+    int durationInDays = scanner.nextInt();
+    scanner.nextLine();
+
+
+    CheckIn checkIn = new CheckIn(roomNumber, paymentMethod, durationInDays);
+
+    daftarKamar[roomNumber].assignCheckIn(checkIn);
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    System.out.println("Check-In Berhasil!");
+    System.out.println("Nomor Transaksi: " + checkIn.getTransactionNumber());
+    System.out.println("Nomor Kamar: " + checkIn.getRoomNumber());
+    System.out.println("Metode Pembayaran: " + checkIn.getPaymentMethod());
+    System.out.println("Durasi Menginap: " + checkIn.getDurationInDays() + " hari");
+    DateTimeFormatter checkInFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    System.out.println("Tanggal dan Waktu Check In: " + checkIn.getCheckInDateTime().format(checkInFormatter));
+    System.out.println("Tanggal Check-Out: " + checkIn.getCheckOutDateTime().format(formatter));
+    System.out.println("==========================");
+}
+
+
+
+private Room findRoomByTransactionNumber(int transactionNumber) {
+    for (Room room : daftarKamar) {
+        if (room != null && room.checkIn != null && room.checkIn.getTransactionNumber() == transactionNumber) {
+            return room;
+        }
+    }
+    return null;
+}
+
+
+public void checkout() {
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.println("=== HALAMAN CHECKOUT ===");
+    System.out.print("Masukkan Nomor Transaksi: ");
+    int transactionNumber = scanner.nextInt();
+    scanner.nextLine();
+
+    Room room = findRoomByTransactionNumber(transactionNumber);
+    if (room == null || !room.isOccupied) {
+        System.out.println("Kamar tidak terisi atau tidak tersedia.");
+        return;
     }
 
-    public void caritransaksi() {
-        // Implementasi cari transaksi
-        // Implementasi logika untuk cari transaksi
-    }
+    Penyewa penyewa = room.penyewa;
+    CheckIn checkIn = room.checkIn;
 
-    public void statistikhotel() {
-        // Implementasi check-in
-        // Implementasi logika untuk statistikhotel
+    System.out.println("=== Struk Checkout ===");
+    System.out.println("Nomor Transaksi: " + checkIn.getTransactionNumber());
+    System.out.println("Nomor Kamar: " + checkIn.getRoomNumber());
+    System.out.println("Nama Tamu: " + penyewa.guestName);
+    DateTimeFormatter checkInFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+    System.out.println("Tanggal dan Waktu Check In: " + checkIn.getCheckInDateTime().format(checkInFormatter));
+    System.out.print("Masukkan Jam Checkout (HH:mm): ");
+    String checkoutTimeInput = scanner.nextLine();
+    DateTimeFormatter checkoutFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    System.out.println("Tanggal Check-Out: " + checkIn.getCheckOutDateTime().format(checkoutFormatter));
+    int checkoutHour = Integer.parseInt(checkoutTimeInput.substring(0, 2));
+    int checkoutMinute = Integer.parseInt(checkoutTimeInput.substring(3));
+
+    if (checkoutHour > 12 || (checkoutHour == 12 && checkoutMinute > 0)) {
+        System.out.println("Anda checkout setelah jam 12:00 PM. Dikenakan denda.");
+
+        // Menghitung selisih waktu checkout dengan jam 12:00 PM
+        int hoursOverdue = 0;
+        if (checkoutHour > 12) {
+            hoursOverdue = checkoutHour - 12 ;
+            if (checkoutMinute > 0) {
+                hoursOverdue++;
+            }
+        }
+
+        double fineRate = 0;
+        switch (room.roomType.toLowerCase()) {
+            case "presiden":
+                fineRate = 500000;  // Change this to the appropriate fine rate for "presiden" room
+                break;
+            case "vip":
+                fineRate = 300000;  // Change this to the appropriate fine rate for "vip" room
+                break;
+            case "reguler":
+                fineRate = 100000;  // Change this to the appropriate fine rate for "reguler" room
+                break;
+            default:
+                System.out.println("Tipe kamar tidak valid.");
+                return;
+        }
+
+        // Calculate the fine based on the fine rate and the number of hours overdue
+        double finePerHour = fineRate;
+        double totalFine = Math.max(0, hoursOverdue * finePerHour);
+        System.out.println("Total Harga Denda: " + formatCurrencyInHotel(totalFine));
+        room.fine = totalFine;
+
+        // Calculate the total bill including the fine
+        double totalBiaya = Math.max(0, room.roomPrice * checkIn.getDurationInDays() + room.fine);
+        System.out.println("Total Tagihan: " + currencyFormatter.format(totalBiaya));
     }
 }
 
+// Fungsi untuk format mata uang
+private String formatCurrencyInHotel(double amount) {
+    DecimalFormat currencyFormatter = new DecimalFormat("#,##0.00");
+    return currencyFormatter.format(amount);
+}
+
+
+   public void caritransaksi() {
+    Scanner scanner = new Scanner(System.in);
+
+    System.out.println("==========================");
+    System.out.println("       CARI TRANSAKSI      ");
+    System.out.println("==========================");
+
+    System.out.print("Masukkan Nomor Transaksi: ");
+    int transactionNumber = scanner.nextInt();
+    scanner.nextLine();
+
+    Room room = findRoomByTransactionNumber(transactionNumber);
+
+    if (room != null && room.isOccupied && room.checkIn != null) {
+        System.out.println("=== Informasi Transaksi ===");
+        System.out.println("Nomor Transaksi: " + room.checkIn.getTransactionNumber());
+        System.out.println("Nomor Kamar: " + room.roomNumber);
+        System.out.println("Nama Tamu: " + room.penyewa.guestName);
+        System.out.println("Tipe Kamar: " + room.roomType);
+        System.out.println("Durasi Menginap: " + room.checkIn.getDurationInDays() + " hari");
+
+        DateTimeFormatter checkInFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        System.out.println("Tanggal dan Waktu Check In: " + room.checkIn.getCheckInDateTime().format(checkInFormatter));
+        System.out.println("Tanggal Check-Out: " + room.checkIn.getCheckOutDateTime().format(checkInFormatter));
+
+        DecimalFormat currencyFormatter = new DecimalFormat("Rp#,##0.00");
+        String formattedRoomPrice = currencyFormatter.format(room.roomPrice);
+        System.out.println("Harga Kamar per Hari: " + formattedRoomPrice);
+
+        if (room.fine > 0) {
+            String formattedFine = currencyFormatter.format(room.fine);
+            System.out.println("Denda: " + formattedFine);
+        }
+
+        double totalBill = room.roomPrice * room.checkIn.getDurationInDays() + room.fine;
+        String formattedTotalBill = currencyFormatter.format(totalBill);
+        System.out.println("Total Tagihan: " + formattedTotalBill);
+
+        System.out.println("==========================");
+    } else {
+        System.out.println("Maaf, transaksi tidak ditemukan atau kamar tidak terisi.");
+        System.out.println("==========================");
+    }
+}
+
+
+public void statistikhotel() {
+    int nomorKamarTerbesar = 0;
+
+    for (Room room : daftarKamar) {
+        if (room != null && room.roomNumber > nomorKamarTerbesar) {
+            nomorKamarTerbesar = room.roomNumber;
+        }
+    }
+
+    int totalKamar = nomorKamarTerbesar;
+    int kamarTersedia = 0;
+    int kamarTerisi = 0;
+    int kamarTamuMenginap = 0;
+
+    for (Room room : daftarKamar) {
+        if (room != null) {
+            if (!room.isOccupied) {
+                kamarTersedia++;
+            } else {
+                kamarTerisi++;
+                if (room.checkIn != null) {
+                    kamarTamuMenginap++;
+                }
+            }
+        }
+    }
+
+    // Perbarui kamar tersedia berdasarkan jumlah check-in
+    kamarTersedia = totalKamar - kamarTamuMenginap;
+
+    System.out.println("==========================");
+    System.out.println("      STATISTIK HOTEL      ");
+    System.out.println("==========================");
+    System.out.println("Jumlah Total Kamar: " + totalKamar);
+    System.out.println("Jumlah Kamar Tersedia: " + kamarTersedia);
+    System.out.println("Jumlah Kamar Terisi: " + kamarTerisi);
+    System.out.println("Jumlah Kamar Tamu yang Menginap: " + kamarTamuMenginap);
+    System.out.println("==========================");
+}
+
+
+}
 public class HotelManagement {
     private static final int TABLE_SIZE = 100;
     private static Admin[] hashTable = new Admin[TABLE_SIZE];
@@ -451,7 +609,7 @@ public class HotelManagement {
                         SistemLogin.logIn(scanner, hashTable);
                         menuHotel.menuHotel();
                         break;
-                    case 0:
+                    case 3:
                         System.out.println("TERIMAKASIH TELAH MENGGUNAKAN PROGRAM INI.");
                         System.exit(0);
                     default:
@@ -508,7 +666,6 @@ class SistemLogin {
             System.out.print("Enter password: ");
             String password = scanner.nextLine();
 
-            // Linear probing untuk menemukan admin di hashTable
             while (hashTable[adminId] != null) {
                 if (hashTable[adminId].value.equals(password)) {
                     System.out.println("Login successful!");
